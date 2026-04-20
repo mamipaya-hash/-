@@ -1,0 +1,662 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎹 ピアノれんしゅうチェッカー</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0F0E17;--surface:#1A1928;--surface2:#232235;--border:#2E2C45;
+  --cream:#FFF8F0;--coral:#FF6B6B;--gold:#FFD166;--mint:#06D6A0;
+  --sky:#74C0FC;--lavender:#B197FC;--text:#E8E4F0;--muted:#7A7590;--white:#FFFFFF;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Zen Maru Gothic',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;}
+
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) var(--delay,0s) infinite ease-in-out;}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(1);}50%{opacity:.8;transform:scale(1.4);}}
+
+.app{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:24px 16px 80px;}
+
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
+.login-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:32px;
+  padding:48px 40px 40px;width:100%;max-width:420px;
+  box-shadow:0 32px 80px rgba(0,0,0,.5);
+  animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.85) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.login-logo{text-align:center;margin-bottom:32px;}
+.piano-keys{font-size:52px;display:block;filter:drop-shadow(0 0 20px rgba(255,209,102,.4));animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.login-logo h1{font-size:22px;font-weight:900;color:var(--gold);margin-top:12px;letter-spacing:1px;}
+.login-logo p{font-size:13px;color:var(--muted);margin-top:4px;}
+
+.login-tabs{display:flex;background:var(--bg);border-radius:14px;padding:4px;margin-bottom:28px;}
+.login-tab{flex:1;padding:9px;border-radius:10px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--muted);}
+.login-tab.active{background:var(--surface2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+.field-group{margin-bottom:16px;}
+.field-group label{display:block;font-size:12px;font-weight:700;color:var(--lavender);margin-bottom:6px;}
+.field-group select,.field-group input[type=text],.field-group input[type=password]{
+  width:100%;padding:12px 16px;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:14px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .2s;
+}
+.field-group select:focus,.field-group input:focus{border-color:var(--lavender);}
+.field-group select option{background:var(--bg);}
+
+.login-btn{
+  width:100%;padding:14px;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:900;
+  cursor:pointer;transition:all .2s;margin-top:4px;
+  background:linear-gradient(135deg,var(--gold),#FF9A3C);color:#1A0A00;
+  box-shadow:0 4px 20px rgba(255,209,102,.3);
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,209,102,.4);}
+.login-error{text-align:center;color:var(--coral);font-size:13px;margin-top:12px;min-height:20px;animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+/* MAIN */
+#mainApp{display:none;}
+
+.topbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:14px 20px;margin-bottom:24px;box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+.topbar-logo{font-size:22px;}
+.topbar-title{font-size:15px;font-weight:900;color:var(--gold);}
+.topbar-mode{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--muted);}
+.topbar-mode.teacher{background:rgba(255,209,102,.15);color:var(--gold);}
+.topbar-mode.family{background:rgba(6,214,160,.15);color:var(--mint);}
+.topbar-week{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.topbar-week input[type=date]{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:6px 10px;font-family:inherit;font-size:12px;color:var(--text);outline:none;}
+.topbar-week input:focus{border-color:var(--lavender);}
+.week-label{font-size:12px;color:var(--muted);}
+.logout-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;}
+.logout-btn:hover{color:var(--coral);border-color:var(--coral);}
+
+.view-tabs{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.vtab{padding:9px 18px;border-radius:50px;border:1.5px solid var(--border);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;background:var(--surface);color:var(--muted);}
+.vtab.active{background:var(--gold);color:#1A0A00;border-color:var(--gold);}
+.vtab:hover:not(.active){color:var(--text);border-color:var(--text);}
+
+/* CARDS */
+.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px;}
+.student-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:22px;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;animation:cardIn .4s ease both;}
+.student-card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.35);}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.card-stripe{position:absolute;top:0;left:0;right:0;height:4px;border-radius:24px 24px 0 0;}
+.card-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.s-name{font-size:16px;font-weight:900;color:var(--text);}
+.s-grade{font-size:11px;color:var(--muted);margin-top:2px;}
+.ring-wrap{margin-left:auto;position:relative;width:46px;height:46px;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:4;}
+.ring-fill{fill:none;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .7s ease;}
+.ring-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--text);}
+.tasks{display:flex;flex-direction:column;gap:8px;}
+.task-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--surface2);border:1.5px solid transparent;cursor:pointer;transition:all .2s;user-select:none;}
+.task-row:hover{border-color:var(--border);}
+.task-row.done{background:rgba(6,214,160,.08);border-color:rgba(6,214,160,.3);}
+.task-chk{width:24px;height:24px;border-radius:50%;border:2.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;background:var(--surface);transition:all .25s;}
+.task-row.done .task-chk{background:var(--mint);border-color:var(--mint);color:#003D2E;animation:ckpop .3s ease;}
+@keyframes ckpop{0%{transform:scale(1);}50%{transform:scale(1.4);}100%{transform:scale(1);}}
+.task-info{flex:1;min-width:0;}
+.task-lbl{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text);}
+.task-row.done .task-lbl{color:var(--mint);}
+.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+.b-finger{background:rgba(255,209,102,.2);color:var(--gold);}
+.b-tech{background:rgba(116,192,252,.2);color:var(--sky);}
+.b-piece{background:rgba(177,151,252,.2);color:var(--lavender);}
+.task-note{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.task-row.done .task-note{color:rgba(6,214,160,.6);}
+.edit-btn{background:none;border:none;cursor:pointer;font-size:15px;opacity:.3;transition:opacity .2s;flex-shrink:0;}
+.edit-btn:hover{opacity:1;}
+
+/* SUMMARY */
+.summary-wrap{animation:cardIn .4s ease both;}
+.summary-hd{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px 20px;margin-bottom:16px;}
+.summary-hd h2{font-size:15px;font-weight:900;flex:1;}
+.s-badge{background:var(--gold);color:#1A0A00;border-radius:50px;padding:4px 14px;font-size:13px;font-weight:900;}
+.sum-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+.sum-table{width:100%;border-collapse:collapse;}
+.sum-table th{background:var(--surface2);padding:12px 16px;font-size:11px;font-weight:700;color:var(--lavender);text-align:left;border-bottom:1px solid var(--border);}
+.sum-table td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.sum-table tr:last-child td{border-bottom:none;}
+.sum-table tr:hover td{background:var(--surface2);}
+.ck-cell{text-align:center;font-size:17px;}
+.bar-wrap{display:flex;align-items:center;gap:8px;}
+.bar-track{flex:1;height:7px;border-radius:4px;background:var(--border);overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+
+/* ADMIN */
+.admin-wrap{animation:cardIn .4s ease both;}
+.admin-section{margin-bottom:32px;}
+.admin-section h2{font-size:15px;font-weight:900;color:var(--gold);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+.admin-card-head{display:flex;align-items:center;gap:10px;}
+.admin-card-head .av{width:36px;height:36px;border-radius:50%;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.admin-name{font-size:14px;font-weight:900;}
+.admin-grade{font-size:11px;color:var(--muted);}
+.admin-field label{font-size:11px;font-weight:700;color:var(--lavender);display:block;margin-bottom:4px;}
+.admin-field input[type=text],.admin-field input[type=password],.admin-field select{width:100%;padding:9px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s;}
+.admin-field input:focus,.admin-field select:focus{border-color:var(--gold);}
+.admin-field .pw-row{display:flex;gap:6px;}
+.admin-field .pw-row input{flex:1;}
+.pw-toggle{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:0 10px;cursor:pointer;font-size:14px;color:var(--muted);transition:color .2s;}
+.pw-toggle:hover{color:var(--text);}
+.save-row{display:flex;justify-content:flex-end;}
+.save-one-btn{background:var(--gold);color:#1A0A00;border:none;border-radius:10px;padding:8px 16px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.save-one-btn:hover{transform:scale(1.04);}
+.teacher-pw-card{background:var(--surface);border:1px solid rgba(255,209,102,.3);border-radius:18px;padding:20px;max-width:360px;}
+.teacher-pw-card h3{font-size:14px;font-weight:900;color:var(--gold);margin-bottom:12px;}
+.save-toast{display:inline-block;margin-left:12px;font-size:13px;color:var(--mint);font-weight:700;opacity:0;transition:opacity .3s;}
+.save-toast.show{opacity:1;}
+
+/* FAMILY */
+.family-view{animation:cardIn .4s ease both;}
+.family-hero{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.family-avatar{width:64px;height:64px;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center;}
+.family-name{font-size:22px;font-weight:900;}
+.family-grade{font-size:13px;color:var(--muted);}
+.family-pct{margin-left:auto;text-align:center;}
+.family-pct .big{font-size:32px;font-weight:900;color:var(--mint);}
+.family-pct .lbl{font-size:11px;color:var(--muted);}
+.family-tasks{display:flex;flex-direction:column;gap:12px;}
+.family-task{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:16px 18px;transition:all .2s;}
+.family-task.done{background:rgba(6,214,160,.06);border-color:rgba(6,214,160,.25);}
+.ft-top{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;}
+.ft-chk{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;background:var(--surface2);transition:all .25s;}
+.family-task.done .ft-chk{background:var(--mint);border-color:var(--mint);color:#003D2E;animation:ckpop .3s ease;}
+.ft-lbl{font-size:15px;font-weight:900;}
+.family-task.done .ft-lbl{color:var(--mint);}
+.ft-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;margin-left:auto;}
+.ft-body{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.ft-teacher-note{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--muted);margin-bottom:10px;border-left:3px solid var(--gold);}
+.ft-teacher-note strong{color:var(--gold);font-size:11px;display:block;margin-bottom:2px;}
+.ft-note-label{font-size:11px;font-weight:700;color:var(--sky);margin-bottom:5px;}
+.ft-note-input{width:100%;padding:9px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s;resize:none;}
+.ft-note-input:focus{border-color:var(--sky);}
+.ft-save-btn{background:var(--sky);color:#00263D;border:none;border-radius:10px;padding:7px 16px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;transition:all .2s;}
+.ft-save-btn:hover{transform:scale(1.03);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:28px;width:100%;max-width:460px;box-shadow:0 32px 80px rgba(0,0,0,.5);animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both;}
+.modal h2{font-size:18px;font-weight:900;color:var(--gold);margin-bottom:4px;}
+.modal .msub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.modal label{font-size:12px;font-weight:700;color:var(--lavender);display:block;margin-bottom:5px;}
+.modal input[type=text],.modal textarea{width:100%;padding:10px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;resize:none;transition:border-color .2s;margin-bottom:12px;}
+.modal input:focus,.modal textarea:focus{border-color:var(--lavender);}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+.mbtn{padding:10px 22px;border-radius:50px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;}
+.mbtn-cancel{background:var(--surface2);color:var(--muted);}
+.mbtn-cancel:hover{color:var(--text);}
+.mbtn-save{background:var(--lavender);color:#1A0A00;}
+.mbtn-save:hover{transform:scale(1.04);}
+
+/* CONFETTI */
+.confetti-c{position:fixed;inset:0;pointer-events:none;z-index:300;overflow:hidden;}
+.cp{position:absolute;border-radius:2px;animation:cffall var(--dur,1.5s) var(--del,0s) ease forwards;}
+@keyframes cffall{0%{transform:translateY(-10px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+@media(max-width:600px){
+  .login-box{padding:32px 20px;}
+  .sum-table th:nth-child(n+4),.sum-table td:nth-child(n+4){display:none;}
+  .family-hero{flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="confetti-c" id="confettiC"></div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="piano-keys">🎹</span>
+      <h1>ピアノ れんしゅう チェッカー</h1>
+      <p>ログインしてはじめよう</p>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchTab('teacher')">👩‍🏫 先生</button>
+      <button class="login-tab" onclick="switchTab('family')">🏠 ご家庭</button>
+    </div>
+    <div id="teacherForm">
+      <div class="field-group">
+        <label>先生用パスワード</label>
+        <input type="password" id="teacherPwIn" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <div id="familyForm" style="display:none">
+      <div class="field-group">
+        <label>生徒さんのなまえ</label>
+        <select id="familySel"></select>
+      </div>
+      <div class="field-group">
+        <label>ご家庭のパスワード</label>
+        <input type="password" id="familyPwIn" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <button class="login-btn" onclick="doLogin()">🎵 ログイン</button>
+    <div class="login-error" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainApp">
+  <div class="app">
+    <div class="topbar">
+      <span class="topbar-logo">🎹</span>
+      <span class="topbar-title">ピアノ れんしゅう チェッカー</span>
+      <span class="topbar-mode" id="modeTag"></span>
+      <div class="topbar-week">
+        <span class="week-label" id="weekLbl"></span>
+        <input type="date" id="weekIn"/>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    </div>
+    <div class="view-tabs" id="viewTabs" style="display:none">
+      <button class="vtab active" onclick="setView('cards')"   id="vt-cards">🎵 生徒カード</button>
+      <button class="vtab"        onclick="setView('summary')" id="vt-summary">📋 まとめ</button>
+      <button class="vtab"        onclick="setView('admin')"   id="vt-admin">⚙️ 管理</button>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<!-- Teacher task modal -->
+<div id="taskModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="mTitle"></h2>
+    <p class="msub" id="mSub"></p>
+    <label>📝 練習内容・メモ（先生から）</label>
+    <textarea id="mNote" rows="3" placeholder="例：ハノン1番 右手からゆっくり練習"></textarea>
+    <label>🎯 目標（任意）</label>
+    <input type="text" id="mGoal" placeholder="例：テンポ60で3回通せたら合格！"/>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-cancel" onclick="closeModal()">キャンセル</button>
+      <button class="mbtn mbtn-save" onclick="saveModal()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const TASKS=[
+  {id:'finger',label:'運指練習',      badge:'b-finger',icon:'🖐️'},
+  {id:'tech',  label:'テクニック練習', badge:'b-tech',  icon:'⚡'},
+  {id:'piece', label:'課題曲',         badge:'b-piece', icon:'🎼'},
+];
+const COLS=[
+  {stripe:'linear-gradient(90deg,#FF6B6B,#FFD166)',ring:'#FF6B6B',bg:'rgba(255,107,107,.18)',emoji:'🌸'},
+  {stripe:'linear-gradient(90deg,#74C0FC,#B197FC)',ring:'#74C0FC',bg:'rgba(116,192,252,.18)',emoji:'🌊'},
+  {stripe:'linear-gradient(90deg,#06D6A0,#74C0FC)',ring:'#06D6A0',bg:'rgba(6,214,160,.18)',  emoji:'🌿'},
+  {stripe:'linear-gradient(90deg,#B197FC,#FF6B6B)',ring:'#B197FC',bg:'rgba(177,151,252,.18)',emoji:'⭐'},
+  {stripe:'linear-gradient(90deg,#FFD166,#FF6B6B)',ring:'#FFD166',bg:'rgba(255,209,102,.18)',emoji:'🌟'},
+  {stripe:'linear-gradient(90deg,#FF6B9D,#FFD166)',ring:'#FF6B9D',bg:'rgba(255,107,157,.18)',emoji:'🌺'},
+  {stripe:'linear-gradient(90deg,#06D6A0,#FFD166)',ring:'#06D6A0',bg:'rgba(6,214,160,.18)',  emoji:'🍀'},
+  {stripe:'linear-gradient(90deg,#FF9A3C,#FFD166)',ring:'#FF9A3C',bg:'rgba(255,154,60,.18)', emoji:'🔥'},
+  {stripe:'linear-gradient(90deg,#B197FC,#74C0FC)',ring:'#B197FC',bg:'rgba(177,151,252,.18)',emoji:'🦋'},
+];
+
+let cfg=JSON.parse(localStorage.getItem('pianoCfg')||'null')||{
+  teacherPw:'teacher123',
+  students:[
+    {id:1,name:'やまだ はなこ',grade:'小3',pw:'hanako'},
+    {id:2,name:'たなか けんと',grade:'小2',pw:'kento'},
+    {id:3,name:'すずき あおい',grade:'小4',pw:'aoi'},
+    {id:4,name:'いとう みく',  grade:'小1',pw:'miku'},
+    {id:5,name:'わたなべ そら',grade:'小5',pw:'sora'},
+    {id:6,name:'なかむら りな',grade:'小3',pw:'rina'},
+    {id:7,name:'こばやし こうき',grade:'小6',pw:'koki'},
+    {id:8,name:'かとう ゆい',  grade:'小2',pw:'yui'},
+    {id:9,name:'よしだ はると',grade:'小4',pw:'haruto'},
+  ]
+};
+// tasks[week][sid][tid]={done,note,goal,familyNote}
+let tasks=JSON.parse(localStorage.getItem('pianoTasks3')||'{}');
+function saveCfg(){localStorage.setItem('pianoCfg',JSON.stringify(cfg));}
+function saveTasks(){localStorage.setItem('pianoTasks3',JSON.stringify(tasks));}
+
+// ── SESSION ───────────────────────────────────────────
+let session={role:null,sid:null};
+let loginMode='teacher';
+let week='';
+let view='cards';
+let editTarget=null;
+
+// ── STARS ─────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=1+Math.random()*2;
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;`;
+    c.appendChild(s);
+  }
+})();
+
+// ── LOGIN ─────────────────────────────────────────────
+function switchTab(m){
+  loginMode=m;
+  document.querySelectorAll('.login-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&m==='teacher')||(i===1&&m==='family')));
+  document.getElementById('teacherForm').style.display=m==='teacher'?'':'none';
+  document.getElementById('familyForm').style.display=m==='family'?'':'none';
+  document.getElementById('loginErr').textContent='';
+}
+function fillSel(){
+  const sel=document.getElementById('familySel');
+  sel.innerHTML=cfg.students.map(s=>`<option value="${s.id}">${s.name}（${s.grade}生）</option>`).join('');
+}
+fillSel();
+
+function doLogin(){
+  const err=document.getElementById('loginErr');
+  if(loginMode==='teacher'){
+    if(document.getElementById('teacherPwIn').value===cfg.teacherPw){
+      session={role:'teacher',sid:null};startApp();
+    } else err.textContent='❌ パスワードが違います';
+  } else {
+    const sid=parseInt(document.getElementById('familySel').value);
+    const pw=document.getElementById('familyPwIn').value;
+    const st=cfg.students.find(s=>s.id===sid);
+    if(st&&pw===st.pw){session={role:'family',sid};startApp();}
+    else err.textContent='❌ パスワードが違います';
+  }
+}
+function doLogout(){
+  session={role:null,sid:null};
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('teacherPwIn').value='';
+  document.getElementById('familyPwIn').value='';
+  document.getElementById('loginErr').textContent='';
+}
+
+// ── WEEK ──────────────────────────────────────────────
+function weekKey(d){
+  const dt=new Date(d),day=dt.getDay(),diff=dt.getDate()-day+(day===0?-6:1);
+  return new Date(new Date(d).setDate(diff)).toISOString().slice(0,10);
+}
+function fmtWeek(wk){
+  const m=new Date(wk),s=new Date(wk);s.setDate(s.getDate()+6);
+  const f=d=>`${d.getMonth()+1}/${d.getDate()}`;
+  return `${m.getFullYear()}年 ${f(m)}〜${f(s)}`;
+}
+function initWeek(){
+  const inp=document.getElementById('weekIn');
+  const today=new Date().toISOString().slice(0,10);
+  inp.value=today;week=weekKey(today);
+  document.getElementById('weekLbl').textContent=fmtWeek(week);
+  inp.addEventListener('change',e=>{
+    week=weekKey(e.target.value);
+    document.getElementById('weekLbl').textContent=fmtWeek(week);
+    render();
+  });
+}
+
+// ── START ─────────────────────────────────────────────
+function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  initWeek();
+  const mt=document.getElementById('modeTag'),vt=document.getElementById('viewTabs');
+  if(session.role==='teacher'){
+    mt.textContent='👩‍🏫 先生モード';mt.className='topbar-mode teacher';
+    vt.style.display='flex';view='cards';
+  } else {
+    mt.textContent='🏠 ご家庭モード';mt.className='topbar-mode family';
+    vt.style.display='none';view='family';
+  }
+  render();
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function getTask(sid,tid){
+  if(!tasks[week])tasks[week]={};
+  if(!tasks[week][sid])tasks[week][sid]={};
+  if(!tasks[week][sid][tid])tasks[week][sid][tid]={done:false,note:'',goal:'',familyNote:''};
+  return tasks[week][sid][tid];
+}
+function prog(sid){
+  let done=0;
+  TASKS.forEach(t=>{if(getTask(sid,t.id).done)done++;});
+  return{done,total:TASKS.length,pct:Math.round(done/TASKS.length*100)};
+}
+
+// ── VIEW SWITCHER ─────────────────────────────────────
+function setView(v){
+  view=v;
+  ['cards','summary','admin'].forEach(n=>{const b=document.getElementById('vt-'+n);if(b)b.className='vtab'+(v===n?' active':'');});
+  render();
+}
+function render(){
+  if(view==='family')renderFamily();
+  else if(view==='cards')renderCards();
+  else if(view==='summary')renderSummary();
+  else if(view==='admin')renderAdmin();
+}
+
+// ── CARDS ─────────────────────────────────────────────
+function renderCards(){
+  const el=document.getElementById('content');
+  el.innerHTML='';
+  const grid=document.createElement('div');grid.className='student-grid';
+  cfg.students.forEach((s,i)=>{
+    const c=COLS[i%COLS.length],p=prog(s.id),circ=2*Math.PI*20,off=circ-(p.pct/100)*circ;
+    const card=document.createElement('div');card.className='student-card';
+    card.style.animationDelay=i*.05+'s';
+    card.innerHTML=`
+      <div class="card-stripe" style="background:${c.stripe}"></div>
+      <div class="card-head">
+        <div class="avatar" style="background:${c.bg}">${c.emoji}</div>
+        <div><div class="s-name">${s.name}</div><div class="s-grade">${s.grade}生</div></div>
+        <div class="ring-wrap">
+          <svg width="46" height="46" viewBox="0 0 46 46">
+            <circle class="ring-bg" cx="23" cy="23" r="20"/>
+            <circle class="ring-fill" cx="23" cy="23" r="20" stroke="${c.ring}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"/>
+          </svg>
+          <div class="ring-txt">${p.pct}%</div>
+        </div>
+      </div>
+      <div class="tasks">
+        ${TASKS.map(t=>{
+          const tk=getTask(s.id,t.id);
+          return `<div class="task-row${tk.done?' done':''}" onclick="toggleTask(${s.id},'${t.id}')">
+            <div class="task-chk">${tk.done?'✓':''}</div>
+            <div class="task-info">
+              <div class="task-lbl"><span class="badge ${t.badge}">${t.icon} ${t.label}</span></div>
+              <div class="task-note">${tk.note||'（メモなし）'}</div>
+            </div>
+            <button class="edit-btn" onclick="openModal(event,${s.id},'${t.id}')">✏️</button>
+          </div>`;
+        }).join('')}
+      </div>`;
+    grid.appendChild(card);
+  });
+  el.appendChild(grid);
+}
+
+function toggleTask(sid,tid){
+  const t=getTask(sid,tid);t.done=!t.done;
+  if(t.done)confetti();saveTasks();render();
+}
+
+// ── SUMMARY ───────────────────────────────────────────
+function renderSummary(){
+  const el=document.getElementById('content');
+  const tot=cfg.students.length*TASKS.length;
+  let done=0;cfg.students.forEach(s=>done+=prog(s.id).done);
+  const pct=Math.round(done/tot*100);
+  el.innerHTML=`<div class="summary-wrap">
+    <div class="summary-hd"><h2>📊 クラス全体 — ${fmtWeek(week)}</h2><span class="s-badge">全体 ${pct}%</span></div>
+    <div class="sum-table-wrap"><table class="sum-table">
+      <thead><tr><th>生徒さん</th><th style="text-align:center">🖐️ 運指</th><th style="text-align:center">⚡ テクニック</th><th style="text-align:center">🎼 課題曲</th><th>達成度</th></tr></thead>
+      <tbody>${cfg.students.map((s,i)=>{
+        const c=COLS[i%COLS.length],p=prog(s.id);
+        return `<tr>
+          <td><div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px">${c.emoji}</span>
+            <div><div style="font-weight:700;font-size:13px">${s.name}</div><div style="font-size:11px;color:var(--muted)">${s.grade}生</div></div></div></td>
+          ${TASKS.map(t=>`<td class="ck-cell">${getTask(s.id,t.id).done?'✅':'⬜'}</td>`).join('')}
+          <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:${p.pct}%;background:${c.ring}"></div></div>
+            <span style="font-size:12px;font-weight:700;color:${c.ring};min-width:34px">${p.pct}%</span></div></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+// ── ADMIN ─────────────────────────────────────────────
+function renderAdmin(){
+  const el=document.getElementById('content');
+  el.innerHTML=`<div class="admin-wrap">
+    <div class="admin-section">
+      <h2>🔐 先生用パスワード変更</h2>
+      <div class="teacher-pw-card">
+        <h3>先生パスワード</h3>
+        <div class="admin-field">
+          <label>新しいパスワード</label>
+          <div class="pw-row">
+            <input type="password" id="newTPw" value="${cfg.teacherPw}"/>
+            <button class="pw-toggle" onclick="togVis('newTPw',this)">👁️</button>
+          </div>
+        </div>
+        <button class="save-one-btn" style="margin-top:4px" onclick="saveTPw()">保存</button>
+      </div>
+    </div>
+    <div class="admin-section">
+      <h2>👨‍👩‍👧 生徒・ご家庭の設定</h2>
+      <div class="admin-grid">
+        ${cfg.students.map((s,i)=>{
+          const c=COLS[i%COLS.length];
+          return `<div class="admin-card">
+            <div class="admin-card-head">
+              <div class="av" style="background:${c.bg}">${c.emoji}</div>
+              <div><div class="admin-name">${s.name}</div><div class="admin-grade">${s.grade}生</div></div>
+            </div>
+            <div class="admin-field"><label>なまえ</label><input type="text" id="sn_${s.id}" value="${s.name}"/></div>
+            <div class="admin-field"><label>学年</label>
+              <select id="sg_${s.id}">${['小1','小2','小3','小4','小5','小6'].map(g=>`<option${g===s.grade?' selected':''}>${g}</option>`).join('')}</select>
+            </div>
+            <div class="admin-field"><label>ご家庭パスワード</label>
+              <div class="pw-row">
+                <input type="password" id="sp_${s.id}" value="${s.pw}"/>
+                <button class="pw-toggle" onclick="togVis('sp_${s.id}',this)">👁️</button>
+              </div>
+            </div>
+            <div class="save-row"><button class="save-one-btn" onclick="saveStudent(${s.id})">保存</button></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <span class="save-toast" id="adminToast">✅ 保存しました！</span>
+  </div>`;
+}
+
+function togVis(id,btn){
+  const i=document.getElementById(id);
+  i.type=i.type==='password'?'text':'password';
+  btn.textContent=i.type==='password'?'👁️':'🙈';
+}
+function saveTPw(){
+  const v=document.getElementById('newTPw').value.trim();
+  if(!v)return;cfg.teacherPw=v;saveCfg();toast();
+}
+function saveStudent(sid){
+  const s=cfg.students.find(x=>x.id===sid);
+  s.name=document.getElementById('sn_'+sid).value.trim()||s.name;
+  s.grade=document.getElementById('sg_'+sid).value;
+  s.pw=document.getElementById('sp_'+sid).value.trim()||s.pw;
+  saveCfg();fillSel();toast();
+}
+function toast(){
+  const t=document.getElementById('adminToast');if(!t)return;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── FAMILY VIEW ───────────────────────────────────────
+function renderFamily(){
+  const sid=session.sid;
+  const s=cfg.students.find(x=>x.id===sid);
+  const idx=cfg.students.indexOf(s);
+  const c=COLS[idx%COLS.length],p=prog(sid);
+  const el=document.getElementById('content');
+  el.innerHTML=`<div class="family-view">
+    <div class="family-hero">
+      <div class="family-avatar" style="background:${c.bg}">${c.emoji}</div>
+      <div><div class="family-name">${s.name}</div><div class="family-grade">${s.grade}生 ・ ${fmtWeek(week)}</div></div>
+      <div class="family-pct"><div class="big">${p.pct}%</div><div class="lbl">達成度</div></div>
+    </div>
+    <div class="family-tasks">
+      ${TASKS.map(t=>{
+        const tk=getTask(sid,t.id);
+        return `<div class="family-task${tk.done?' done':''}" id="ft_${t.id}">
+          <div class="ft-top" onclick="famToggle(${sid},'${t.id}')">
+            <div class="ft-chk">${tk.done?'✓':''}</div>
+            <div class="ft-lbl">${t.icon} ${t.label}</div>
+            <span class="ft-badge badge ${t.badge}">${tk.done?'✅ できた！':'やってみよう'}</span>
+          </div>
+          <div class="ft-body">
+            ${tk.note?`<div class="ft-teacher-note"><strong>👩‍🏫 先生からのメモ</strong>${tk.note}</div>`:''}
+            ${tk.goal?`<div class="ft-teacher-note" style="border-color:var(--lavender)"><strong>🎯 目標</strong>${tk.goal}</div>`:''}
+            <div class="ft-note-label">📝 おうちからのメモ</div>
+            <textarea class="ft-note-input" id="fn_${t.id}" rows="2" placeholder="れんしゅうのようすを書いてね">${tk.familyNote||''}</textarea>
+            <br><button class="ft-save-btn" onclick="saveFamNote(${sid},'${t.id}',this)">メモを保存</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function famToggle(sid,tid){
+  const t=getTask(sid,tid);t.done=!t.done;
+  if(t.done)confetti();saveTasks();renderFamily();
+}
+function saveFamNote(sid,tid,btn){
+  getTask(sid,tid).familyNote=document.getElementById('fn_'+tid).value.trim();
+  saveTasks();btn.textContent='✅ 保存した！';
+  setTimeout(()=>btn.textContent='メモを保存',1600);
+}
+
+// ── TEACHER MODAL ─────────────────────────────────────
+function openModal(e,sid,tid){
+  e.stopPropagation();editTarget={sid,tid};
+  const s=cfg.students.find(x=>x.id===sid),t=TASKS.find(x=>x.id===tid),tk=getTask(sid,tid);
+  document.getElementById('mTitle').textContent=`${t.icon} ${t.label}`;
+  document.getElementById('mSub').textContent=`${s.name}さん（${s.grade}生）`;
+  document.getElementById('mNote').value=tk.note||'';
+  document.getElementById('mGoal').value=tk.goal||'';
+  document.getElementById('taskModal').style.display='flex';
+}
+function closeModal(){document.getElementById('taskModal').style.display='none';editTarget=null;}
+function saveModal(){
+  if(!editTarget)return;
+  const tk=getTask(editTarget.sid,editTarget.tid);
+  tk.note=document.getElementById('mNote').value.trim();
+  tk.goal=document.getElementById('mGoal').value.trim();
+  saveTasks();closeModal();render();
+}
+
+// ── CONFETTI ──────────────────────────────────────────
+function confetti(){
+  const c=document.getElementById('confettiC');
+  const cols=['#FF6B6B','#FFD166','#06D6A0','#74C0FC','#B197FC','#FF9A3C'];
+  for(let i=0;i<26;i++){
+    const p=document.createElement('div');p.className='cp';
+    const sz=6+Math.random()*8;
+    p.style.cssText=`left:${Math.random()*100}%;top:${-5+Math.random()*20}%;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()>.5?'50%':'3px'};--dur:${1.2+Math.random()*.8}s;--del:${Math.random()*.4}s;`;
+    c.appendChild(p);setTimeout(()=>p.remove(),2500);
+  }
+}
+</script>
+</body>
+</html>
